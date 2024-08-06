@@ -1,0 +1,276 @@
+<html>
+<head>
+    <style>
+        body {  /*fondo de la pagina*/
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0px;
+        }
+
+
+        /* Inicio -- color del menu y medidas*/
+        .navbar { 
+            background-color: #007bff;
+            padding: 15px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar ul li {
+            margin: 0 15px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: sans-serif;
+        }
+
+        .navbar ul li a:hover {
+            background-color: #0056b3;
+        }
+        /* Final -- color del menu y medidas*/
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .Texto, select, .numero {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(80% - 22px); /* Permite modificar de manera sencilla el ancho */
+            box-sizing: border-box;
+            outline: none;
+            border-radius: 100px;
+        }
+
+        .boton{
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .boton:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        #espacioTabla {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+        <!-- Menu de navegación con enlaces a diferentes páginas HTML -->
+
+    <div class="navbar">
+        <ul>
+            <li><a href="/clienteHTML">Cliente</a></li>            
+            <li><a href="/relojeroHTML">Relojero</a></li>                      
+            <li><a href="/personaHTML">Persona</a></li>
+        </ul>
+    </div>
+    <!-- Selecionar para cargar clientes -->
+    <select id = "cargadeclientes"></select>
+
+
+        <!-- Formularios para agregar un nuevo reloj -->
+        <input class="Texto" type="text" placeholder="Escriba la serie" id="serie"/>
+        <input class="Texto" type="text" placeholder="Escriba el color" id="color"/>
+        <input class="Texto" type="text" placeholder="Escriba la marca" id="marca"/>
+        <input class="Texto" type="text" placeholder="Escriba el modelo" id="modelo"/>
+
+        <input class="boton" type="button" value="Guardar" onclick="guarda()"/>
+
+
+
+        <!-- Espacio que muestra los relojes en forma de tabla-->
+        <div id="espacioTabla">
+            <table>
+                    <thead>
+                        <tr>
+                            <td>Serie</td>  
+                            <td>Color</td>
+                            <td>Marca</td>
+                            <td>Modelo</td>
+                            <td>Dueno</td>
+                            <td>Modificar</td>
+                            <td>Eliminar</td>
+                        </tr>
+                    </thead>
+                        <tbody id="cuerpoTabla">
+
+                        </tbody>
+            </table>
+        </div>
+
+<script type="text/javascript">
+
+     // Función para cargar datos de relojes desde la API
+function cargarDatos()
+        {
+        var objetoaenviar = new Object();
+                    
+            try
+                {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET','/relojes');
+                    xhr.setRequestHeader('Content-Type','application/json');
+                    xhr.onload = function()
+                    {
+                    if(xhr.status == 200)
+                        {
+                            console.log(JSON.parse(xhr.responseText));
+                            rellenaTabla(JSON.parse(xhr.responseText))
+                        }
+                    else
+                        {
+                            console.log(xhr);
+                        }
+                    };
+                    xhr.send();
+                    }
+            catch(err)
+                {
+                    console.log(err.message);
+                }
+        }
+
+          // Cargar los datos de clientes al cargar la página
+function cargarDatosCliente()
+        {
+        var objetoaenviar = new Object();
+                    
+            try
+                {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET','/cliente');
+                    xhr.setRequestHeader('Content-Type','application/json');
+                    xhr.onload = function()
+                    {
+                    if(xhr.status == 200)
+                        {
+                            console.log(JSON.parse(xhr.responseText));
+                            rellenaselect(JSON.parse(xhr.responseText))
+                        }
+                    else
+                        {
+                            console.log(xhr);
+                        }
+                    };
+                    xhr.send();
+                    }
+            catch(err)
+                {
+                    console.log(err.message);
+                }
+        }
+
+        // Función para rellenar el select con datos de clientes
+function rellenaselect(vector)
+        {
+        document.getElementById("cargadeclientes").innerHTML =""
+        for (var elemento in vector)
+            {
+                document.getElementById("cargadeclientes").innerHTML += "<option id = " + vector[elemento].cedula + " value = " + vector[elemento].cedula + ">" + vector[elemento].cedula + " " + vector[elemento].tipo + " </option>"
+            }
+           
+        }
+
+        cargarDatosCliente()
+
+        // Función para guardar un nuevo reloj
+function guarda()
+
+
+        {
+            
+            var objetoaenviar = new Object();
+            objetoaenviar.serie = document.getElementById("serie").value
+            objetoaenviar.color = document.getElementById("color").value        
+            objetoaenviar.marca = document.getElementById("marca").value
+            objetoaenviar.modelo = document.getElementById("modelo").value  
+            objetoaenviar.duenno = document.getElementById("cargadeclientes").value
+            try
+                {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('PUT','/relojes');
+                    xhr.setRequestHeader('Content-Type','application/json');
+                    xhr.onload = function()
+                    {
+                    if(xhr.status == 200)
+                        {
+                            console.log(JSON.parse(xhr.responseText));
+                            alert('Guardado')
+                            rellenaTabla(JSON.parse(xhr.responseText))
+
+                        }
+                    else
+                        {
+                            console.log(xhr);
+                        }
+                    };
+                    xhr.send(JSON.stringify(objetoaenviar));
+                    }
+            catch(err)
+                {
+                    console.log(err.message);
+                }
+        }
+
+        function rellenaTabla(vector)
+        {
+        document.getElementById("cuerpoTabla").innerHTML =""
+        document.getElementById("cuerpoTabla").innerHTML += "<tr>"
+        for (var elemento in vector)
+            {
+                document.getElementById("cuerpoTabla").innerHTML += "<td>" + vector[elemento].serie + "</td><td>"+ vector[elemento].color  +"</td><td>"+ vector[elemento].marca  +"</td><td>"+ vector[elemento].modelo  + "</td><td>"+ vector[elemento].duenno  + "</td><td><input type= 'button' value = 'Modificar' onclick= 'modificar()' /></td><td><input type= 'button' value = 'Eliminar' onclick= 'eliminar()' /></td><td>"
+            }
+            document.getElementById("cuerpoTabla").innerHTML += "</tr>"
+        }
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            padding: 15px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar ul li {
+            margin: 0 15px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: sans-serif;
+        }
+
+        .navbar ul li a:hover {
+            background-color: #0056b3;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .Texto, select, .numero {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(80% - 22px); /* Full width minus padding and border */
+            box-sizing: border-box;
+            outline: none;
+            border-radius: 100px;
+        }
+
+        .boton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .boton:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #espacioTabla {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <div class="navbar">
+        <ul>
+            <li><a href="/relojeroHTML">Relojero</a></li>
+            <li><a href="/relojesHTML">Relojes</a></li>
+            <li><a href="/personaHTML">Persona</a></li>
+        </ul>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <!-- Tabla para la entrada de datos -->
+        <table>
+            <tr class="input-select">
+                <td><select id="cargadepersonas"></select></td> <!-- Dropdown para seleccionar personas -->
+                <td><input class="Texto" type="text" placeholder="Escriba el tipo de cliente" id="tipo"/></td> <!-- Campo de entrada para tipo de cliente -->
+            </tr>
+            <tr>
+                <td class="inputStyle"><input class="boton" type="button" value="Guardar" onclick="guarda()"/></td> <!-- Botón para guardar -->
+            </tr>
+        </table>
+
+        <!-- Espacio para mostrar la tabla de clientes -->
+        <div id="espacioTabla">
+            <table>
+                <thead>
+                    <tr class="cuadro">
+                        <td>Cédula</td>
+                        <td>Tipo</td>
+                        <td>Modificar</td>
+                        <td>Eliminar</td>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Función para cargar datos de clientes
+        function cargarDatos() {
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/cliente');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function() {
+                    if (xhr.status == 200) {
+                        console.log(JSON.parse(xhr.responseText));
+                        rellenaTabla(JSON.parse(xhr.responseText)); // Llenar la tabla con los datos de respuesta
+                    } else {
+                        console.log(xhr);
+                    }
+                };
+                xhr.send();
+            } catch (err) {
+                console.log(err.message);
+            }
+        }
+
+        // Función para cargar datos de personas
+        function cargarDatosPersona() {
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/persona');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function() {
+                    if (xhr.status == 200) {
+                        console.log(JSON.parse(xhr.responseText));
+                        rellenaselect(JSON.parse(xhr.responseText)); // Llenar el dropdown con los datos de respuesta
+                    } else {
+                        console.log(xhr);
+                    }
+                };
+                xhr.send();
+            } catch (err) {
+                console.log(err.message);
+            }
+        }
+
+        // Función para llenar el dropdown con datos de personas
+        function rellenaselect(vector) {
+            document.getElementById("cargadepersonas").innerHTML = "";
+            for (var elemento in vector) {
+                document.getElementById("cargadepersonas").innerHTML += "<option id='" + vector[elemento].cedula + "' value='" + vector[elemento].cedula + "'>" + vector[elemento].cedula + " " + vector[elemento].nombre + "</option>";
+            }
+        }
+
+        // Llamar a la función para cargar datos de personas al cargar la página
+        cargarDatosPersona();
+
+        // Función para guardar los datos del cliente
+        function guarda() {
+            var objetoaenviar = new Object();
+            objetoaenviar.cedula = document.getElementById("cargadepersonas").value;
+            objetoaenviar.tipo = document.getElementById("tipo").value;
+
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('PUT', '/cliente');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function() {
+                    if (xhr.status == 200) {
+                        console.log(JSON.parse(xhr.responseText));
+                        alert('Guardado');
+                        rellenaTabla(JSON.parse(xhr.responseText)); // Actualizar la tabla con los nuevos datos
+                    } else {
+                        console.log(xhr);
+                    }
+                };
+                xhr.send(JSON.stringify(objetoaenviar));
+            } catch (err) {
+                console.log(err.message);
+            }
+        }
+
+        // Función para llenar la tabla con datos de clientes
+        function rellenaTabla(vector) {
+            document.getElementById("cuerpoTabla").innerHTML = "";
+            for (var elemento in vector) {
+                document.getElementById("cuerpoTabla").innerHTML += "<tr><td>" + vector[elemento].cedula + "</td><td>" + vector[elemento].tipo + "</td><td><input type='button' value='Modificar' onclick='modificar()' /></td><td><input type='button' value='Eliminar' onclick='eliminar()' /></td></tr>";
+            }
+        }
+    </script>
+</body>
+</html>

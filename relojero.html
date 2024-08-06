@@ -1,0 +1,232 @@
+<html>
+
+<head>
+    <style>
+         body {/*fondo de la pagina*/
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0px;
+        }
+        /* Inicio -- color del menu y medidas*/
+        .navbar {
+            background-color: #007bff;
+            padding: 15px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar ul li {
+            margin: 0 15px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: sans-serif;
+        }
+
+        .navbar ul li a:hover {
+            background-color: #0056b3;
+        }
+        /* Final -- color del menu y medidas*/
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .Texto, select, .numero {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(80% - 22px); /* Permite modificar de manera sencilla el ancho */
+            box-sizing: border-box;
+            outline: none;
+            border-radius: 100px;
+        }
+
+        .boton{
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .boton:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        #espacioTabla {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de navegación -->
+    <div class="navbar">
+        <ul>
+            <li><a href="/clienteHTML">Cliente</a></li>                     
+            <li><a href="/relojesHTML">Relojes</a></li>           
+            <li><a href="/personaHTML">Persona</a></li>
+        </ul>
+    </div>
+
+    <!-- Selección de personas -->
+    <select id="cargadepersonas"></select>
+
+    <!-- Campos de entrada para especialidad y salario por hora -->
+    <input class="Texto" type="text" placeholder="Escriba la especialidad" id="especialidad"/>
+    <input class="Texto" type="text" placeholder="Escriba el salario por hora" id="salarioxHora"/>
+
+    <!-- Botón para guardar -->
+    <input class="boton" type="button" value="Guardar" onclick="guarda()"/>
+
+    <!-- Espacio para la tabla -->
+    <div id="espacioTabla">
+        <table>
+            <thead>
+                <tr>
+                    <td>Cedula</td>       
+                    <td>Especialidad</td>
+                    <td>Salario por hora</td>
+                    <td>Modificar</td>
+                    <td>Eliminar</td>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+                <!-- Filas de la tabla se rellenarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+<script type="text/javascript">
+    // Función para cargar los datos de los relojeros desde el servidor
+    function cargarDatos() {
+        var objetoaenviar = new Object();
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/relojero');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    console.log(JSON.parse(xhr.responseText));
+                    rellenaTabla(JSON.parse(xhr.responseText))
+                } else {
+                    console.log(xhr);
+                }
+            };
+            xhr.send();
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    // Función para cargar los datos de las personas desde el servidor
+    function cargarDatosPersona() {
+        var objetoaenviar = new Object();
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/persona');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    console.log(JSON.parse(xhr.responseText));
+                    rellenaselect(JSON.parse(xhr.responseText))
+                } else {
+                    console.log(xhr);
+                }
+            };
+            xhr.send();
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    // Función para rellenar el selector con los datos de las personas
+    function rellenaselect(vector) {
+        document.getElementById("cargadepersonas").innerHTML = ""
+        for (var elemento in vector) {
+            document.getElementById("cargadepersonas").innerHTML += "<option id=" + vector[elemento].cedula + " value=" + vector[elemento].cedula + ">" + vector[elemento].cedula + " " + vector[elemento].nombre + " </option>"
+        }
+    }
+
+    // Llamar a la función para cargar los datos de las personas cuando la página se carga
+    cargarDatosPersona()
+
+    // Función para guardar los datos del relojero en el servidor
+    function guarda() {
+        var objetoaenviar = new Object();
+        objetoaenviar.cedula = document.getElementById("cargadepersonas").value
+        objetoaenviar.especialidad = document.getElementById("especialidad").value        
+        objetoaenviar.salarioxHora = document.getElementById("salarioxHora").value 
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('PUT', '/relojero');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    console.log(JSON.parse(xhr.responseText));
+                    alert('Guardado')
+                    rellenaTabla(JSON.parse(xhr.responseText))
+                } else {
+                    console.log(xhr);
+                }
+            };
+            xhr.send(JSON.stringify(objetoaenviar));
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    // Función para rellenar la tabla con los datos de los relojeros
+    function rellenaTabla(vector) {
+        document.getElementById("cuerpoTabla").innerHTML = ""
+        document.getElementById("cuerpoTabla").innerHTML += "<tr>"
+        for (var elemento in vector) {
+            document.getElementById("cuerpoTabla").innerHTML += "<td>" + vector[elemento].cedula + "</td><td>" + vector[elemento].especialidad + "</td><td>" + vector[elemento].salarioxHora + "</td><td><input type='button' value='Modificar' onclick='modificar()' /></td><td><input type='button' value='Eliminar' onclick='eliminar()' /></td><td>"
+        }
+        document.getElementById("cuerpoTabla").innerHTML += "</tr>"
+    }
+
+</script>
+</body>
+</html>
